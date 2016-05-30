@@ -1,5 +1,5 @@
 [![Join the chat at https://gitter.im/shockone/black-screen](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/shockone/black-screen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-![](https://circleci.com/gh/shockone/black-screen.png?style=shield)
+[![Build Status](https://travis-ci.org/shockone/black-screen.svg?branch=master)](https://travis-ci.org/shockone/black-screen)
 
 What Is It?
 -----------
@@ -22,18 +22,14 @@ history substitutions for `!!`, command descriptions, value of the previous dire
 
 We aim to be compatible at least with [VT100](https://en.wikipedia.org/wiki/VT100). All the programs (emacs, ssh, vim) should work as expected.
 
-Installation
+Install
 ------------
 
 ```bash
-git clone https://github.com/shockone/black-screen.git && cd black-screen
-npm i
-npm start
+brew cask install black-screen
 ```
 
-To create a standalone application, execute `npm run package` in the project directory.
-
-**Note: Only OS X is currently supported, although there are good chances it will work on Linux. We plan to make Black Screen work on all the major platforms in the future.**
+Linux and Windows builds will be available after 1.0.0 release. Currently only OS X is supported to speed up the development process.
 
 Technologies
 ------------
@@ -56,10 +52,15 @@ More Screenshots
 ![](README/htop.png)
 ![](README/cd.png)
 
-TODO
-----
+Development Setup
+------------
 
-You can find the list of items currently being worked on in this issue: [TODO](https://github.com/shockone/black-screen/issues/58)
+```bash
+git clone https://github.com/shockone/black-screen.git && cd black-screen
+npm start
+```
+
+To create a standalone application, execute `npm run pack` in the project directory.
 
 Contributing
 ------------

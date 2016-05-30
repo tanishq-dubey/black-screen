@@ -1,8 +1,8 @@
 /node_modules/
-/compiled/*
+/compiled/src/*
 /tmp/*
 /npm-debug.log
-/Black Screen.app/
+/dist/*
 
 # Created by https://www.gitignore.io/api/osx
 

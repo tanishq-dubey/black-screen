@@ -1,6 +1,7 @@
-import {Suggestion, type} from "./plugins/autocompletion_providers/Suggestions";
+import {Suggestion, styles, style} from "./plugins/autocompletion_providers/Suggestions";
 import * as _ from "lodash";
 import {compose} from "./utils/Common";
+import Environment from "./Environment";
 
 export enum InputMethod {
     Typed,
@@ -11,7 +12,7 @@ export interface Context {
     input: string;
     directory: string;
     historicalCurrentDirectoriesStack: string[];
-    cdpath: string[];
+    environment: Environment;
     inputMethod: InputMethod;
 }
 
@@ -172,9 +173,9 @@ export const runtime = (producer: (context: Context) => Promise<Parser>) => asyn
 export const optionalContinuation = (parser: Parser) => optional(sequence(spacesWithoutSuggestion, parser));
 export const append = (suffix: string, parser: Parser) => decorate(sequence(parser, withoutSuggestions(string(suffix))), suggestion => suggestion.withValue(suggestion.value + suffix));
 export const token = (parser: Parser) => decorate(sequence(parser, spacesWithoutSuggestion), suggestion => suggestion.withValue(suggestion.value + " "));
-export const executable = (name: string) => decorate(token(string(name)), type("executable"));
-export const commandSwitch = (value: string) => decorate(string(`--${value}`), type("option"));
-export const option = (value: string) => decorate(string(`--${value}=`), type("option"));
+export const executable = (name: string) => decorate(token(string(name)), style(styles.executable));
+export const commandSwitch = (value: string) => decorate(string(`--${value}`), style(styles.option));
+export const option = (value: string) => decorate(string(`--${value}=`), style(styles.option));
 
 export const debug = (parser: Parser, tag = "debugged") => async (context: Context) => {
     window.DEBUG = true;

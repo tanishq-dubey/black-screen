@@ -2,12 +2,17 @@ import * as ChildProcess from "child_process";
 import * as OS from "os";
 import * as _ from "lodash";
 import * as pty from "pty.js";
-import {baseName, resolveFile, exists, filterAsync, shell} from "./utils/Common";
+import {loginShell} from "./utils/Shell";
 
-const noConfigSwitches: Dictionary<string[]> = {
-    zsh: ["--no-globalrcs", "--no-rcs"],
-    bash: ["--noprofile", "--norc"],
-};
+function escapeArgument(argument: string) {
+    if (argument.includes('"') || argument.includes(" ")) {
+        return `'${argument}'`;
+    } else if (argument.includes("'")) {
+        return `"${argument}"`;
+    } else {
+        return argument;
+    }
+}
 
 export default class PTY {
     private terminal: pty.Terminal;
@@ -16,7 +21,7 @@ export default class PTY {
     // TODO: use generators.
     // TODO: terminate. https://github.com/atom/atom/blob/v1.0.15/src/task.coffee#L151
     constructor(command: string, args: string[], env: ProcessEnvironment, dimensions: Dimensions, dataHandler: (d: string) => void, exitHandler: (c: number) => void) {
-        this.terminal = pty.fork(shell(), [...noConfigSwitches[baseName(shell())], "-c", `${command} ${args.map(arg => `'${arg}'`).join(" ")}`], {
+        this.terminal = pty.fork(loginShell.executableName, [...loginShell.noConfigSwitches, "-c", `${command} ${args.map(escapeArgument).join(" ")}`], {
             cols: dimensions.columns,
             rows: dimensions.rows,
             cwd: env.PWD,
@@ -73,28 +78,11 @@ export function executeCommand(command: string, args: string[] = [], directory: 
 
 export async function linedOutputOf(command: string, args: string[], directory: string): Promise<string[]> {
     let output = await executeCommand(command, args, directory);
-    return output.split(OS.EOL).filter(path => path.length > 0);
+    return output.split("\\" + OS.EOL).join(" ").split(OS.EOL).filter(path => path.length > 0);
 }
 
 export async function executeCommandWithShellConfig(command: string): Promise<string[]> {
-    const shellName = baseName(shell());
-    const sourceCommands = (await existingConfigFiles(shellName)).map(fileName => `source ${fileName}`);
+    const sourceCommands = (await loginShell.existingConfigFiles()).map(fileName => `source ${fileName} &> /dev/null`);
 
-    return await linedOutputOf(shell(), ["-c", `'${[...sourceCommands, command].join("; ")}'`], process.env.HOME);
-}
-
-async function existingConfigFiles(shellName: string): Promise<string[]> {
-    const resolvedConfigFiles = configFiles(shellName).map(fileName => resolveFile(process.env.HOME, fileName));
-    return await filterAsync(resolvedConfigFiles, exists);
-}
-
-function configFiles(shellName: string): string[] {
-    switch (shellName) {
-        case "zsh":
-            return ["~/.zshrc", "~/.zsh_profile"];
-        case "bash":
-            return ["~/.bashrc", "~/.bash_profile"];
-        default:
-            throw `Unknown shell: ${shellName}`;
-    }
+    return await linedOutputOf(loginShell.executableName, ["-c", `'${[...sourceCommands, command].join("; ")}'`], process.env.HOME);
 }
